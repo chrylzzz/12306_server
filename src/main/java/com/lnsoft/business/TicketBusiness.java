@@ -42,18 +42,22 @@ public class TicketBusiness {
      *
      * @param idcard ：身份证号
      */
-    @RabbitListener(queues = "topic.ticket")//监听的队列
+    @RabbitListener(queues = "topic.ticket")//监听的队列，监听客户端的队列，等待拉取客户端购票请求
     @RabbitHandler
     public void process(String idcard, Message message, Channel channel) throws IOException {
         try {
+
+            //###############################################
             //模拟消费者下单之后订单放到队列topic.ticket中，客户端去队列拉取数据，进行业务操作
-            System.out.println(idcard + "==用户正在下单，服务器调用订单系统，下单成功，正在进行出票===出票成功！！~");
+            System.out.println("==="+idcard + "===用户购票请求，用户购票，正在下单，服务器调用订单系统。。。。，下单成功，正在进行出票===出票成功！！~");
             TicketInfo result = ticketService.queryTicket(idcard);
-            //把在服务器查到的结果数据（第二个参数），放到队列中（第一个参数），供消费者拿取
-            rabbitSender.send("topic.ticketRespInfo", result.getId() + "~~" + format.format(new Date()));
+            //把服务端处理的情况再塞入到服务端队列，等待消费者拉取，（把在服务器查到的结果数据（第二个参数），放到队列中（第一个参数），供消费者拿取）
+            rabbitSender.send("topic.ticketRespInfo", "==="+result.getId() + "===" + format.format(new Date()));
+            //###############################################
+
+
             //告诉服务器收到这条消息 已经被我消费了 可以在队列删掉 这样以后就不会再发了 否则消息服务器以为这条消息没处理掉 后续还会在发
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false); // false只确认当前一个消息收到，true确认所有consumer获得的消息
-
             //true为确认所有的消费者都收到消息后，消息再删除
 //            channel.basicAck(message.getMessageProperties().getDeliveryTag(), true);
         } catch (Exception e) {

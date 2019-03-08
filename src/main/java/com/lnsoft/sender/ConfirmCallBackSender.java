@@ -5,6 +5,7 @@ import org.springframework.amqp.rabbit.support.CorrelationData;
 import org.springframework.stereotype.Component;
 
 /**
+ * //后来加上的
  * Created By Chr on 2019/2/17/0017.
  */
 @Component
